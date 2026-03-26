@@ -12,9 +12,9 @@ Antes de comenzar, asegúrate de tener instalados:
 - [Starkli](https://book.starkli.rs/installation) (Para interactuar con la red y hacer el deploy)
 - Una billetera Starknet en tu navegador (ej. [Argent X](https://www.argent.xyz/argent-x/) o [Braavos](https://braavos.app/))
 
-## 📦 1. Clonar y Configurar el Proyecto
+## 📦 1. Clonar e Instalar
 
-Clona este repositorio en tu máquina local e instala las dependencias necesarias:
+Clona este repositorio en tu máquina local e instala automáticamente las dependencias para todos los espacios de trabajo (frontend y contratos):
 
 ```bash
 git clone https://github.com/BeyonderCrypto/starknet-bootcamp-nft.git
@@ -24,18 +24,17 @@ yarn install
 
 ## 🛠️ 2. Compilar los Smart Contracts (Cairo)
 
-Los contratos inteligentes se encuentran dentro del paquete `snfoundry`. Para compilar el contrato `BootcampNFT.cairo`:
+Usando la configuración nativa de Scaffold-Stark, puedes compilar los contratos directamente desde la raíz del proyecto ejecutando:
 
 ```bash
-cd packages/snfoundry
-scarb build
+yarn compile
 ```
 
-Si todo está correcto, Scarb generará los artefactos de compilación dentro de la carpeta `target/dev/`.
+Esto procesará el contrato `BootcampNFT.cairo` dentro del paquete `snfoundry` y generará los artefactos listos para el deploy.
 
 ## ⚙️ 3. Configuración para Deploy en Sepolia (.env)
 
-Para hacer el deploy en la red de pruebas **Starknet Sepolia**, necesitas configurar tus variables de entorno y tu cuenta de Starkli.
+Para hacer el deploy en la red de pruebas **Starknet Sepolia**, necesitas configurar tus variables de entorno y tu cuenta de Starkli en el paquete de contratos.
 
 1. Navega a la carpeta de contratos y copia el archivo de entorno de ejemplo:
    ```bash
@@ -65,40 +64,41 @@ Para hacer el deploy en la red de pruebas **Starknet Sepolia**, necesitas config
 
 ## 🚀 4. Hacer el Deploy en Sepolia
 
-Con el `.env` configurado correctamente, ejecuta el siguiente script para desplegar el contrato `BootcampNFT` en Sepolia:
+Vuelve a la **carpeta raíz del proyecto** y ejecuta el script integrado de Scaffold-Stark para hacer el deploy en la red Sepolia:
 
 ```bash
+cd ../../  # Volver a la raíz (si estabas en snfoundry)
 yarn deploy --network sepolia
 ```
 
-> **Nota:** La billetera que realiza el deploy (`ACCOUNT_ADDRESS`) quedará registrada como el **Administrador** del contrato. Sólo el administrador puede agregar alumnos aprobados.
+> **Rol del Administrador:** La billetera que realiza el deploy (`ACCOUNT_ADDRESS`) quedará registrada automáticamente en el contrato como el **Administrador**. Sólo el administrador puede habilitar estudiantes para el minteo.
 
-Una vez finalizado, las direcciones del contrato y sus ABIs se exportarán automáticamente a `packages/nextjs/contracts/deployedContracts.ts` para que el Frontend pueda interactuar con ellos.
+Gracias a Scaffold-Stark, las direcciones del contrato y sus ABIs se exportarán y actualizarán automáticamente en el Frontend (`packages/nextjs/contracts/deployedContracts.ts`).
 
 ## 💻 5. Iniciar el Frontend
 
-Para arrancar la interfaz web, abre una nueva terminal, ve a la carpeta de Next.js y ejecuta:
+Para iniciar la interfaz web, ejecuta el siguiente comando desde la **raíz del proyecto**:
 
 ```bash
-cd packages/nextjs
-yarn dev
+yarn start
 ```
 
-La aplicación estará disponible en [http://localhost:3000](http://localhost:3000). Asegúrate de conectar tu billetera (Argent X o Braavos) en la red **Starknet Sepolia Testnet**.
+La aplicación arrancará automáticamente en [http://localhost:3000](http://localhost:3000). Asegúrate de conectar tu billetera (Argent X o Braavos) en la red **Starknet Sepolia Testnet**.
 
 ---
 
-## 👥 Flujo de Uso y Roles
+## 👥 Flujo de Uso y Accesos
 
 ### 👨‍🏫 Administrador (Profesor)
-- La interfaz del administrador está en `http://localhost:3000/admin`.
-- **Condición:** Solo la **billetera que hizo el deploy** puede acceder a las funciones del administrador.
+- La interfaz para administradores está ubicada en `http://localhost:3000/admin`.
+- **Condición Estricta:** Solo la **billetera que hizo el deploy** puede acceder a las funciones y ejecutar acciones de administrador.
 - **Acciones:**
-  - En la pestaña de administrador, puedes pegar una lista de direcciones de billeteras (separadas por comas, saltos de línea, o desde un archivo `.txt`/`.csv`).
-  - Al hacer click en "Agregar Alumnos" (Register Students), se ejecuta una transacción `MultiCall` (o iterativa sobre `add_approved_student`) para registrar a todos los alumnos calificados en el Smart Contract.
+  - El administrador puede registrar a los alumnos de manera masiva mediante un campo de texto o subiendo un archivo `.txt`/`.csv`.
+  - Al hacer click en "Register Students", Scaffold-Stark se encargará de gestionar el `MultiCall` respectivo para registrar a todos los alumnos calificados en el Smart Contract.
 
 ### 🎓 Estudiante (Participante)
-- Los estudiantes entran a la página principal `http://localhost:3000`.
-- Después de conectar su billetera a Sepolia:
-  - Si el Profesor ya agregó su dirección a la lista de aprobados, verán habilitado el botón para hacer **Mint de su NFT**.
-  - Si aún no están aprobados, el botón estará deshabilitado o indicará que no están autorizados (Not Approved).
+- Los estudiantes acceden directamente a la página de inicio `http://localhost:3000`.
+- **Condición Estricta:** Antes de poder interactuar, deben conectar su billetera a la red Sepolia.
+- **Acciones:**
+  - Si el Profesor ya añadió su dirección a la lista blanca (aprobados), el botón principal de **Mint NFT** estará habilitado y podrán obtener su certificado.
+  - Si no han sido aprobados por el profesor, el botón de Mint permanecerá deshabilitado o arrojará un error indicando que la dirección no tiene autorización.
