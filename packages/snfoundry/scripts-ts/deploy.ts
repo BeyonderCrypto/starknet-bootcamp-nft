@@ -51,6 +51,13 @@ const deployScript = async (): Promise<void> => {
       owner: deployer.address,
     },
   });
+
+  await deployContract({
+    contract: "BootcampNFT",
+    constructorArgs: {
+      admin_address: deployer.address,
+    },
+  });
 };
 
 const main = async (): Promise<void> => {

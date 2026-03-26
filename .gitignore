@@ -16,3 +16,9 @@ package-lock.json
 
 **/.env*
 !**/.env.example
+
+# Cairo / Scarb build
+target/
+
+# Agents
+.agent/

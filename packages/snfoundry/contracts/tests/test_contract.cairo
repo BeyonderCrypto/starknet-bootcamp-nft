@@ -3,7 +3,7 @@ use contracts::your_contract::{IYourContractDispatcher, IYourContractDispatcherT
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 use openzeppelin_utils::serde::SerializedAppend;
 use snforge_std::{CheatSpan, ContractClassTrait, DeclareResultTrait, cheat_caller_address, declare};
-use starknet::ContractAddress;
+use starknet::{ContractAddress, SyscallResultTrait};
 
 // Real wallet address deployed on Sepolia
 const OWNER: ContractAddress = 0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5918
@@ -15,8 +15,8 @@ const STRK_TOKEN_CONTRACT_ADDRESS: ContractAddress = FELT_STRK_CONTRACT.try_into
 fn deploy_contract(name: ByteArray) -> ContractAddress {
     let mut calldata = array![];
     calldata.append_serde(OWNER);
-    let contract = declare(name).unwrap().contract_class();
-    let (contract_address, _) = contract.deploy(@calldata).unwrap();
+    let contract = declare(name).unwrap_syscall().contract_class();
+    let (contract_address, _) = contract.deploy(@calldata).unwrap_syscall();
     contract_address
 }
 

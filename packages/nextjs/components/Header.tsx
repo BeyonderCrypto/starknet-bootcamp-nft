@@ -12,6 +12,7 @@ import { useTargetNetwork } from "~~/hooks/scaffold-stark/useTargetNetwork";
 import { devnet } from "@starknet-start/chains";
 import { SwitchTheme } from "./SwitchTheme";
 import { useAccount, useNetwork, useProvider } from "@starknet-start/react";
+import { useScaffoldReadContract } from "~~/hooks/scaffold-stark/useScaffoldReadContract";
 
 type HeaderMenuLink = {
   label: string;
@@ -35,6 +36,15 @@ export const HeaderMenuLinks = () => {
   const pathname = usePathname();
   const { theme } = useTheme();
   const [isDark, setIsDark] = useState(false);
+  const { address } = useAccount();
+  const { data: ownerAddress } = useScaffoldReadContract({ contractName: "BootcampNFT", functionName: "owner" });
+
+  let isAdmin = false;
+  try {
+    if (address && ownerAddress) {
+      isAdmin = BigInt(address) === BigInt(ownerAddress.toString());
+    }
+  } catch (e) {}
 
   useEffect(() => {
     setIsDark(theme === "dark");
@@ -60,6 +70,18 @@ export const HeaderMenuLinks = () => {
           </li>
         );
       })}
+      {isAdmin && (
+        <li>
+          <Link
+            href="/admin"
+            className={`${
+              pathname === "/admin" ? "bg-primary text-white" : ""
+            } hover:bg-primary hover:text-white py-1.5 px-3 text-sm rounded-full border border-primary/20 gap-2 grid grid-flow-col`}
+          >
+            <span>🛡️ Panel Admin</span>
+          </Link>
+        </li>
+      )}
     </>
   );
 };
